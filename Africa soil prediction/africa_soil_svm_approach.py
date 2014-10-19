@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Author: ismel
+# @Date:   2014-10-19 13:13:22
+# @Last Modified by:   maco
+# @Last Modified time: 2014-10-19 13:22:44
 
 """
     The following code is intended to search the best parameters of SVR algorithm 
