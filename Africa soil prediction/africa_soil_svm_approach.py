@@ -3,7 +3,7 @@
 # @Author: ismel
 # @Date:   2014-10-19 13:13:22
 # @Last Modified by:   maco
-# @Last Modified time: 2014-10-19 13:22:44
+# @Last Modified time: 2014-10-19 13:52:33
 
 """
     The following code is intended to search the best parameters of SVR algorithm 
@@ -75,11 +75,9 @@ if args.scale:
     Y = scaler.fit_transform(Y)
 
 # sets the range of SVR parameters 
-kernel_range = ['rbf', 'lineal']
-#C_range = 10. ** np.arange(-2, 9)
-#gamma_range = 10. ** np.arange(-5, -4)
-C_range = 10. ** np.arange(3, 5)
-gamma_range = [0, 1]
+kernel_range = ['rbf', 'linear']
+C_range = 10. ** np.arange(-2, 9)
+gamma_range = 10. ** np.arange(-5, -4)
 param_grid = dict(kernel=kernel_range, gamma=gamma_range, C=C_range)
 
 # creates the grid and sets the number of cv to 5
