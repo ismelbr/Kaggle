@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 # @Author: ismel
 # @Date:   2014-10-19 13:13:22
-# @Last Modified by:   maco
-# @Last Modified time: 2014-10-19 13:52:33
+# @Last Modified by:   ismelbr@gmail.com
+# @Last Modified time: 2014-10-19 19:53:28
 
 """
     The following code is intended to search the best parameters of SVR algorithm 
@@ -31,16 +31,17 @@ from sklearn.feature_selection import SelectKBest, f_regression
 parser = argparse.ArgumentParser(description='Africa soil property predictions')
 
 # includes depth of the soil sample on the prediction study
-parser.add_argument('--depthSampleFeature', dest='depthSampleFeature', action='store_true', help="include depth of the soil sample on the prediction study")
+parser.add_argument('--depthSampleFeature', dest='depthSampleFeature', action='store_true', help='include depth of the soil sample on the prediction study')
 parser.set_defaults(depthSampleFeature=False)
 
 # adds argument to determine whether scale or not scale the data, that is the question
-parser.add_argument('--scale', dest='scale', action='store_true', help="apply standard scale to the data")
+parser.add_argument('--scale', dest='scale', action='store_true', help='apply standard scale to the data')
 parser.set_defaults(scale=False)
 
-# adds argument for permitting to set, from the command line, the number of kbest features argument in the SelectKBest filter
-parser.add_argument("-k", "--kBest", type=int, default = 0,
-                    help="argument k for the SelectBestK filter")
+# adds argument for permitting to set, from the command line, k as the ratio of features SelectKBest seletcs
+# k = r * number of features 
+parser.add_argument('-rBest', type=float, default = 0, choices=xrange(0, 101),
+                    help='express k as the ratio of features that SelectBestK selects')
 
 args = parser.parse_args()
 
@@ -59,6 +60,7 @@ test.drop('PIDN', axis=1, inplace=True)
 train.drop(['m2379.76','m2377.83','m2375.9','m2373.97','m2372.04','m2370.11','m2368.18','m2366.26','m2364.33','m2362.4','m2360.47','m2358.54','m2356.61','m2354.68','m2352.76'], axis=1, inplace=True)
 test.drop(['m2379.76','m2377.83','m2375.9','m2373.97','m2372.04','m2370.11','m2368.18','m2366.26','m2364.33','m2362.4','m2360.47','m2358.54','m2356.61','m2354.68','m2352.76'], axis=1, inplace=True)
 
+# adds depth feature or not
 if args.depthSampleFeature:
     X, Y = np.array(train)[:,:3579], np.array(test)[:,:3579]
     
@@ -75,9 +77,14 @@ if args.scale:
     Y = scaler.fit_transform(Y)
 
 # sets the range of SVR parameters 
-kernel_range = ['rbf', 'linear']
-C_range = 10. ** np.arange(-2, 9)
-gamma_range = 10. ** np.arange(-5, -4)
+#kernel_range = ['rbf', 'linear']
+#C_range = 10. ** np.arange(-2, 9)
+#gamma_range = 10. ** np.arange(-5, -4)
+
+kernel_range = ['rbf']
+C_range = [1]
+gamma_range = [0]
+
 param_grid = dict(kernel=kernel_range, gamma=gamma_range, C=C_range)
 
 # creates the grid and sets the number of cv to 5
@@ -86,11 +93,16 @@ grid = GridSearchCV(SVR(), param_grid=param_grid, cv=5, verbose = 2)
 # defines and initialize the array of predictions
 preds = np.zeros((Y.shape[0], 5))
 
+# computes the number of k features from rBest
+k = int((args.rBest * X.shape[1] / 100.0))
+
+print k
+
 # for every property to predict
 for i in range(5):
 
 	# Selects the best K variables for the prediction of that property
-    selector = SelectKBest(f_regression, args.kBest if args.kBest > 0 else 'all')
+    selector = SelectKBest(f_regression, k if args.rBest > 0 else 'all')
     selector.fit(X, labels[:, i])
 
     print selector.get_support().shape
@@ -115,4 +127,4 @@ sample['P'] = preds[:,1]
 sample['pH'] = preds[:,2]
 sample['SOC'] = preds[:,3]
 sample['Sand'] = preds[:,4]
-sample.to_csv('results/africa_svr_gridsearch.csv', index = False)
+sample.to_csv('results/africa_svr_gridsearch_r=' + str(args.rBest) + '.csv', index = False)
