@@ -3,7 +3,7 @@
 # @Author: ismel
 # @Date:   2014-10-19 13:13:22
 # @Last Modified by:   ismelbr@gmail.com
-# @Last Modified time: 2014-10-19 19:53:28
+# @Last Modified time: 2014-10-19 20:05:30
 
 """
     The following code is intended to search the best parameters of SVR algorithm 
@@ -95,8 +95,6 @@ preds = np.zeros((Y.shape[0], 5))
 
 # computes the number of k features from rBest
 k = int((args.rBest * X.shape[1] / 100.0))
-
-print k
 
 # for every property to predict
 for i in range(5):
